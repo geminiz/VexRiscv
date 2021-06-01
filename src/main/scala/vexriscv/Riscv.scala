@@ -4,6 +4,8 @@ import spinal.core._
 
 
 object Riscv{
+  def misaToInt(values : String) = values.toLowerCase.map(e => 1 << (e-'a')).reduce(_ | _)
+
   def funct7Range = 31 downto 25
   def rdRange = 11 downto 7
   def funct3Range = 14 downto 12
@@ -14,6 +16,7 @@ object Riscv{
   case class IMM(instruction  : Bits) extends Area{
     // immediates
     def i = instruction(31 downto 20)
+    def h = instruction(31 downto 24)
     def s = instruction(31 downto 25) ## instruction(11 downto 7)
     def b = instruction(31) ## instruction(7) ## instruction(30 downto 25) ## instruction(11 downto 8)
     def u = instruction(31 downto 12) ## U"x000"
@@ -22,6 +25,7 @@ object Riscv{
 
     // sign-extend immediates
     def i_sext = B((19 downto 0) -> i(11)) ## i
+    def h_sext = B((23 downto 0) -> h(7))  ## h
     def s_sext = B((19 downto 0) -> s(11)) ## s
     def b_sext = B((18 downto 0) -> b(11)) ## b ## False
     def j_sext = B((10 downto 0) -> j(19)) ## j ## False
@@ -157,8 +161,10 @@ object Riscv{
 
 
 
-    def UCYCLE    = 0xC00 // UR Machine ucycle counter.
-    def UCYCLEH   = 0xC80
+    def UCYCLE   = 0xC00 // UR Machine ucycle counter.
+    def UCYCLEH  = 0xC80
+    def UTIME    = 0xC01 // rdtime
+    def UTIMEH   = 0xC81
     def UINSTRET  = 0xC02 // UR Machine instructions-retired counter.
     def UINSTRETH = 0xC82 // UR Upper 32 bits of minstret, RV32I only.
   }
